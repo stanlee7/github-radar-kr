@@ -1,0 +1,9 @@
+{
+  "name": "깃허브 레이더",
+  "short_name": "깃허브 레이더",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0d0c",
+  "theme_color": "#0b0d0c",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

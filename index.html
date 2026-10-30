@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>깃허브 레이더</title>
+<meta name="description" content="지금 전 세계 개발자들이 별을 주는 깃허브 레포를 한국어 화면으로. 오늘, 이번 주, 이번 달, 새로 뜬 레포.">
+<meta property="og:title" content="깃허브 레이더 | 지금 뜨는 깃허브 레포">
+<meta property="og:description" content="전 세계 깃허브 인기 레포를 15분마다 새로 고칩니다. AI 레포만 골라 보기.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://github-radar-kr.vercel.app/">
+<meta property="og:image" content="https://github-radar-kr.vercel.app/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://github-radar-kr.vercel.app/og.png">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0b0d0c">
+<style>
+:root{--bg:#0b0d0c;--panel:#141816;--line:#232a26;--text:#eef3ef;--muted:#8b968f;--accent:#b6ff3b;--accent-ink:#0b0d0c}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Pretendard,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif}
+a{color:inherit}
+.wrap{max-width:980px;margin:0 auto;padding:28px 16px 64px}
+header h1{margin:0;font-size:clamp(28px,5vw,44px);font-weight:800;letter-spacing:-.02em}
+header h1 b{color:var(--accent)}
+header p{margin:8px 0 0;color:var(--muted);line-height:1.6}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:24px 0 12px}
+.tabs{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px;flex-wrap:wrap}
+.tabs button{border:0;background:transparent;color:var(--muted);font:inherit;font-weight:600;padding:8px 14px;border-radius:9px;cursor:pointer}
+.tabs button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+select,input[type=search]{background:var(--panel);border:1px solid var(--line);color:var(--text);font:inherit;padding:9px 12px;border-radius:10px}
+input[type=search]{flex:1;min-width:160px}
+label.ai{display:flex;gap:6px;align-items:center;color:var(--muted);font-weight:600;cursor:pointer;user-select:none}
+label.ai input{accent-color:var(--accent);width:16px;height:16px}
+.meta{color:var(--muted);font-size:13px;margin:4px 0 16px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+ol{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+li.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;grid-template-columns:36px 1fr auto;gap:4px 14px;align-items:start}
+li.card:hover{border-color:#3a463f}
+.rank{font-weight:800;font-size:20px;color:var(--muted);text-align:right;line-height:1.3}
+.card.top .rank{color:var(--accent)}
+.name{font-weight:700;font-size:17px;text-decoration:none;word-break:break-all}
+.name span{color:var(--muted);font-weight:400}
+.name:hover{text-decoration:underline}
+.desc{grid-column:2/4;color:#c9d2cc;line-height:1.55;font-size:14.5px;margin-top:2px}
+.ko{grid-column:2/4;color:var(--text);font-weight:700;font-size:15.5px;line-height:1.5;margin-top:4px}
+.use{grid-column:2/4;color:#cfe9a8;font-size:14px;line-height:1.5}
+.use b{color:var(--accent);font-weight:700;margin-right:4px}
+.desc.en{font-size:13px;color:var(--muted)}
+.facts{grid-column:2/4;display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin-top:6px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px;background:#666}
+.gain{color:var(--accent);font-weight:800;white-space:nowrap;font-size:15px;line-height:1.5}
+.tag{border:1px solid #3d5a1e;color:var(--accent);border-radius:999px;padding:0 8px;font-size:12px}
+.empty,.err{padding:40px;text-align:center;color:var(--muted);background:var(--panel);border-radius:14px;border:1px dashed var(--line)}
+.warn{margin:20px 0 0;background:#1d1a0e;border:1px solid #4a3f12;border-radius:12px;padding:12px 16px;color:#e9dfb6;font-size:14px;line-height:1.65}
+.warn summary{cursor:pointer;list-style-position:outside}
+.warn summary b{color:#ffd54a}
+.warn ul{margin:10px 0 6px;padding-left:20px}
+.warn li{margin:4px 0}
+.warn p{margin:6px 0 0;color:#b9ae86}
+.warn code{background:#2a2512;border-radius:4px;padding:1px 5px;font-size:13px}
+.tag.new{border-color:#4a3f12;color:#ffd54a}
+#catbar{margin:4px 0 8px;display:grid;gap:10px}
+#catbar[hidden]{display:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:1px solid var(--line);background:var(--panel);color:var(--text);font:inherit;font-size:14px;font-weight:600;padding:7px 12px;border-radius:999px;cursor:pointer}
+.chips button[aria-pressed=true]{border-color:var(--accent);color:var(--accent);background:#1a2410}
+.tabs.small{justify-self:start}
+.tabs.small button{padding:6px 12px;font-size:14px}
+.cathead{color:var(--muted);font-size:13px;margin:-6px 0 12px}
+.cathead b{color:var(--text)}
+footer{margin-top:40px;color:var(--muted);font-size:13px;line-height:1.7;border-top:1px solid var(--line);padding-top:18px}
+footer a{color:var(--accent);text-decoration:none;font-weight:600}
+@media (max-width:560px){li.card{grid-template-columns:28px 1fr;padding:14px}.gain{grid-column:2}.desc,.facts{grid-column:1/3}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>깃허브 <b>레이더</b></h1>
+  <p>지금 전 세계 개발자들이 별을 주는 레포. 15분마다 새로 고칩니다.</p>
+</header>
+
+<details class="warn">
+  <summary><b>설치 전에 꼭 확인하세요.</b> 별이 많다고 안전한 레포는 아닙니다.</summary>
+  <ul>
+    <li><b>사칭 레포</b>: 인기 레포와 이름이나 설명을 비슷하게 베낀 가짜가 있습니다. 공식 웹사이트나 공식 문서에 걸린 깃허브 주소인지 확인하세요.</li>
+    <li><b>설치 명령</b>: <code>curl ... | sh</code>, <code>irm ... | iex</code>처럼 인터넷에서 받은 스크립트를 바로 실행하는 명령은 먼저 내용을 열어 보고 실행하세요.</li>
+    <li><b>권한과 비밀값</b>: API 키, 토큰, 비밀번호를 요구하거나 파일 전체 접근, 브라우저 제어 권한을 받는 도구(MCP, 확장 프로그램 포함)는 회사 PC와 업무 계정에 바로 연결하지 마세요.</li>
+    <li><b>새로 생긴 레포</b>: 며칠 만에 별이 급히 늘어난 레포는 검증이 덜 된 상태일 수 있습니다. 이슈, 커밋 기록, 만든 사람을 확인하세요.</li>
+    <li><b>라이선스</b>: 상업적 사용이 막힌 라이선스(예: 비상업 전용)나 수정해서 배포하면 소스 공개 의무가 생기는 라이선스(AGPL)가 있습니다.</li>
+    <li><b>회사 규정</b>: 업무 PC에 오픈소스를 설치하기 전에 사내 보안 규정과 담당 부서 확인이 먼저입니다.</li>
+  </ul>
+  <p>이 사이트는 깃허브의 공개 순위를 옮겨 보여 줄 뿐, 레포의 안전성을 검증하거나 보증하지 않습니다.</p>
+</details>
+
+<div class="bar">
+  <div class="tabs" role="group" aria-label="기간">
+    <button data-mode="daily" aria-pressed="true">오늘</button>
+    <button data-mode="weekly" aria-pressed="false">이번 주</button>
+    <button data-mode="monthly" aria-pressed="false">이번 달</button>
+    <button data-mode="rising" aria-pressed="false">새로 뜬 레포</button>
+    <button data-mode="category" aria-pressed="false">카테고리</button>
+  </div>
+  <select id="lang" aria-label="언어">
+    <option value="">모든 언어</option>
+    <option value="python">Python</option>
+    <option value="typescript">TypeScript</option>
+    <option value="javascript">JavaScript</option>
+    <option value="rust">Rust</option>
+    <option value="go">Go</option>
+    <option value="jupyter-notebook">Jupyter Notebook</option>
+    <option value="java">Java</option>
+    <option value="c++">C++</option>
+    <option value="swift">Swift</option>
+    <option value="kotlin">Kotlin</option>
+  </select>
+</div>
+<div id="catbar" hidden>
+  <div class="chips" id="chips" role="group" aria-label="카테고리"></div>
+  <div class="tabs small" role="group" aria-label="기준">
+    <button data-cmode="new" aria-pressed="true">새로 뜬 (30일)</button>
+    <button data-cmode="hot" aria-pressed="false">꾸준한 인기</button>
+  </div>
+</div>
+<div class="bar">
+  <input type="search" id="q" placeholder="이름이나 설명으로 찾기 (예: agent, pdf, excel)">
+  <label class="ai"><input type="checkbox" id="ai"> AI 레포만</label>
+</div>
+<div class="meta"><span id="status">불러오는 중</span><span id="updated"></span></div>
+<div class="cathead" id="cathead" hidden></div>
+<ol id="list"></ol>
+
+<footer>
+  별 숫자와 순위는 깃허브 트렌딩과 깃허브 검색 결과를 그대로 옮깁니다. 순위는 인기를 뜻할 뿐 안전성이나 품질을 보증하지 않습니다. 한국어 요약과 업무 활용 문장은 AI가 각 레포의 설명과 README를 읽고 하루 한 번 만든 것이라 틀릴 수 있으니, 쓰기 전에 원문을 확인하세요. 「새로 뜬 레포」는 최근 7일 안에 만들어진 레포를 별 많은 순으로 보여 줍니다.<br>
+  만든 사람: <a href="https://www.youtube.com/@StanleeTamAIWorklab" target="_blank" rel="noopener">스탠리탬의 AI워크랩</a>, 좋은 레포를 직장인 업무에 쓰는 법을 영상으로 풉니다.
+</footer>
+</div>
+
+<script>
+const AI_WORDS = /\b(ai|llm|llms|agent|agents|agentic|gpt|claude|codex|gemini|openai|anthropic|mcp|rag|diffusion|transformer|ml|machine learning|deep learning|neural|chatbot|copilot|prompt|embedding|whisper|tts|voice|vision|ollama|langchain|inference|model|models)\b/i;
+// 공개 사이트라 성인물, 도박 레포는 보여 주지 않는다
+const BLOCK = /nsfw|porn|hentai|\br-?18\b|\b18\+|adult content|onlyfans|casino|gambling|\bsex\b/i;
+const state = { mode: 'daily', lang: '', q: '', ai: false, cat: 'agent', cmode: 'new', repos: [], fetchedAt: null };
+const $ = s => document.querySelector(s);
+const fmt = n => n == null ? '' : n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1) + 'k' : String(n);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const gainLabel = { daily: '오늘', weekly: '이번 주', monthly: '이번 달' };
+
+function restore() {
+  try { const s = JSON.parse(localStorage.getItem('radar') || '{}'); Object.assign(state, { mode: s.mode || 'daily', lang: s.lang || '', ai: !!s.ai, cat: s.cat || 'agent', cmode: s.cmode || 'new' }); } catch {}
+}
+function fromUrl() {
+  const u = new URLSearchParams(location.search);
+  if (u.get('tab')) state.mode = u.get('tab');
+  if (u.get('c')) state.cat = u.get('c');
+  if (u.get('m')) state.cmode = u.get('m') === 'hot' ? 'hot' : 'new';
+}
+function save() { try { localStorage.setItem('radar', JSON.stringify({ mode: state.mode, lang: state.lang, ai: state.ai, cat: state.cat, cmode: state.cmode })); } catch {} }
+
+const daysAgo = d => Math.max(0, Math.round((Date.now() - new Date(d)) / 864e5));
+let cats = [];
+// 한국어 요약은 하루 한 번 이 PC의 로컬 모델로 만들어 summaries.json으로 함께 배포한다
+let SUMS = {};
+const sumOf = r => SUMS[`${r.owner}/${r.name}`.toLowerCase()];
+async function loadSummaries() {
+  try { SUMS = (await (await fetch('/summaries.json', { cache: 'no-cache' })).json()).repos || {}; if (state.repos.length) render(); } catch { SUMS = {}; }
+}
+async function loadCats() {
+  try { cats = (await (await fetch('/api/category?list=1')).json()).categories; } catch { cats = []; }
+  $('#chips').innerHTML = cats.map(c => `<button data-cat="${c.id}" aria-pressed="${c.id === state.cat}">${esc(c.name)}</button>`).join('');
+  $('#chips').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    state.cat = b.dataset.cat;
+    $('#chips').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    save(); load();
+  }));
+}
+
+let seq = 0;
+async function load() {
+  const my = ++seq;
+  $('#status').textContent = '불러오는 중';
+  $('#list').innerHTML = '';
+  const isCat = state.mode === 'category';
+  $('#catbar').hidden = !isCat; $('#cathead').hidden = true;
+  $('#lang').disabled = state.mode === 'rising' || isCat;
+  const url = isCat ? `/api/category?c=${state.cat}&mode=${state.cmode}`
+    : state.mode === 'rising' ? '/api/rising?days=7'
+    : `/api/trending?since=${state.mode}&lang=${encodeURIComponent(state.lang)}`;
+  try {
+    const r = await fetch(url);
+    const d = await r.json();
+    if (my !== seq) return;
+    if (!r.ok) throw new Error(d.error || r.status);
+    state.repos = d.repos; state.fetchedAt = d.fetchedAt;
+    if (isCat) {
+      $('#cathead').hidden = false;
+      $('#cathead').innerHTML = `<b>${esc(d.category.name)}</b> ${state.cmode === 'new' ? '최근 30일 안에 생긴 레포 중 별 많은 순' : '최근 7일 안에 업데이트된 레포 중 별 많은 순'} (깃허브 토픽: ${d.category.topics.map(esc).join(', ')})`;
+    }
+    render();
+  } catch (e) {
+    $('#status').textContent = '';
+    $('#list').innerHTML = `<li class="err">불러오지 못했습니다. 잠시 뒤 다시 열어 주세요. (${esc(e.message)})</li>`;
+  }
+}
+
+function render() {
+  const q = state.q.trim().toLowerCase();
+  const rows = state.repos.filter(r => {
+    const s = sumOf(r);
+    const text = `${r.owner}/${r.name} ${r.description} ${(r.topics || []).join(' ')} ${s ? s.ko + ' ' + s.use : ''}`;
+    if (BLOCK.test(text)) return false;
+    if (state.ai && !AI_WORDS.test(text)) return false;
+    return !q || text.toLowerCase().includes(q);
+  });
+  $('#status').textContent = `${rows.length}개${state.ai ? ' (AI 레포만)' : ''}`;
+  $('#updated').textContent = state.fetchedAt ? `깃허브 기준 ${new Date(state.fetchedAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : '';
+  if (!rows.length) { $('#list').innerHTML = '<li class="empty">조건에 맞는 레포가 없습니다.</li>'; return; }
+  $('#list').innerHTML = rows.map((r, i) => {
+    const sum = sumOf(r);
+    const isAi = AI_WORDS.test(`${r.name} ${r.description} ${(r.topics || []).join(' ')}`);
+    const gain = r.gained == null
+      ? `<span class="gain">★ ${fmt(r.stars)}</span>`
+      : `<span class="gain">+${fmt(r.gained)} <small>${gainLabel[state.mode]}</small></span>`;
+    const age = state.mode === 'category' && state.cmode === 'hot' && r.pushedAt ? `<span>${daysAgo(r.pushedAt) || '오늘'}${daysAgo(r.pushedAt) ? '일 전' : ''} 업데이트</span>`
+      : r.createdAt ? `<span>${daysAgo(r.createdAt)}일 전 생성</span>` : '';
+    return `<li class="card${i < 3 ? ' top' : ''}">
+      <div class="rank">${i + 1}</div>
+      <a class="name" href="${esc(r.url)}" target="_blank" rel="noopener"><span>${esc(r.owner)} /</span> ${esc(r.name)}</a>
+      ${gain}
+      ${sum ? `<div class="ko">${esc(sum.ko)}</div>${sum.use ? `<div class="use"><b>활용</b>${esc(sum.use)}</div>` : ''}` : ''}
+      <div class="desc${sum ? ' en' : ''}">${esc(r.description) || '<i>설명 없음</i>'}</div>
+      <div class="facts">
+        ${r.language ? `<span><i class="dot" style="background:${esc(r.color || '#666')}"></i>${esc(r.language)}</span>` : ''}
+        <span>★ ${fmt(r.stars)}</span><span>포크 ${fmt(r.forks)}</span>${age}
+        ${isAi ? '<span class="tag">AI</span>' : ''}
+        ${r.createdAt && daysAgo(r.createdAt) <= 14 ? '<span class="tag new" title="생긴 지 2주가 안 된 레포입니다. 설치 전에 만든 사람과 코드를 확인하세요">새 레포, 검증 필요</span>' : ''}
+      </div>
+    </li>`;
+  }).join('');
+}
+
+document.querySelectorAll('.tabs button[data-mode]').forEach(b => b.addEventListener('click', () => {
+  state.mode = b.dataset.mode;
+  document.querySelectorAll('.tabs button[data-mode]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  save(); load();
+}));
+document.querySelectorAll('.tabs button[data-cmode]').forEach(b => b.addEventListener('click', () => {
+  state.cmode = b.dataset.cmode;
+  document.querySelectorAll('.tabs button[data-cmode]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  save(); load();
+}));
+$('#lang').addEventListener('change', e => { state.lang = e.target.value; save(); load(); });
+$('#q').addEventListener('input', e => { state.q = e.target.value; render(); });
+$('#ai').addEventListener('change', e => { state.ai = e.target.checked; save(); render(); });
+
+restore(); fromUrl();
+document.querySelectorAll('.tabs button[data-mode]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.mode === state.mode)));
+document.querySelectorAll('.tabs button[data-cmode]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.cmode === state.cmode)));
+$('#lang').value = state.lang; $('#ai').checked = state.ai;
+loadCats();
+loadSummaries();
+load();
+setInterval(load, 15 * 60 * 1000);
+</script>
+</body>
+</html>
